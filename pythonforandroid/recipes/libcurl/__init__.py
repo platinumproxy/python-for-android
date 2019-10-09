@@ -17,8 +17,11 @@ class LibcurlRecipe(Recipe):
         super(LibcurlRecipe, self).build_arch(arch)
         env = self.get_recipe_env(arch)
 
-        r = self.get_recipe('openssl', self.ctx)
-        openssl_dir = r.get_build_dir(arch.arch)
+        openssl_recipe = self.get_recipe('openssl', self.ctx)
+        openssl_dir = openssl_recipe.get_build_dir(arch.arch)
+
+        env['LDFLAGS'] += openssl_recipe.link_dirs_flags(arch)
+        env['LIBS'] = env.get('LIBS', '') + openssl_recipe.link_libs_flags()
 
         with current_directory(self.get_build_dir(arch.arch)):
             dst_dir = join(self.get_build_dir(arch.arch), 'dist')
