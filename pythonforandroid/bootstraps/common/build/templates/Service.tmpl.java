@@ -3,6 +3,7 @@ package {{ args.package }};
 import android.content.Intent;
 import android.content.Context;
 import org.kivy.android.PythonService;
+import android.os.Build;
 
 
 public class Service{{ name|capitalize }} extends PythonService {
@@ -31,7 +32,17 @@ public class Service{{ name|capitalize }} extends PythonService {
         intent.putExtra("pythonHome", argument);
         intent.putExtra("pythonPath", argument + ":" + argument + "/lib");
         intent.putExtra("pythonServiceArgument", pythonServiceArgument);
+
+        {% if foreground %}
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            ctx.startForegroundService(intent);
+        } else {
+            ctx.startService(intent);
+        }
+        {% else %}
         ctx.startService(intent);
+        {% endif %}
+
     }
 
     static public void stop(Context ctx) {

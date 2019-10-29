@@ -448,6 +448,7 @@ main.py that loads it.''')
             service = True
 
     service_names = []
+    bootstart_receiver_names = []
     for sid, spec in enumerate(args.services):
         spec = spec.split(':')
         name = spec[0]
@@ -456,6 +457,7 @@ main.py that loads it.''')
 
         foreground = 'foreground' in options
         sticky = 'sticky' in options
+        bootstart = 'bootstart' in options
 
         service_names.append(name)
         service_target_path =\
@@ -473,6 +475,24 @@ main.py that loads it.''')
             sticky=sticky,
             service_id=sid + 1,
         )
+
+        if bootstart:
+            receiver_name = '{}BootupBroadcastReceiver'.format(
+                name.capitalize()
+            )
+            broadcast_receiver_path =\
+                'src/main/java/{}/{}.java'.format(
+                    args.package.replace(".", "/"),
+                    receiver_name
+                )
+            render(
+                'BootupBroadcastReceiver.tmpl.java',
+                broadcast_receiver_path,
+                args=args,
+                service_name=name,
+                receiver_name=receiver_name,
+            )
+            bootstart_receiver_names.append(receiver_name)
 
     # Find the SDK directory and target API
     with open('project.properties', 'r') as fileh:
@@ -506,6 +526,7 @@ main.py that loads it.''')
         "args": args,
         "service": service,
         "service_names": service_names,
+        "bootstart_receiver_names": bootstart_receiver_names,
         "android_api": android_api
     }
     if get_bootstrap_name() == "sdl2":
